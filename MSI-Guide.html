@@ -470,6 +470,46 @@
             margin-top: 20px;
             box-shadow: 0 5px 20px rgba(204, 0, 0, 0.1);
             overflow: visible;
+            position: relative;
+        }
+
+        .laptop-navigation {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(204, 0, 0, 0.9);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(204, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .laptop-navigation:hover {
+            background: rgba(170, 0, 0, 0.9);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 6px 20px rgba(204, 0, 0, 0.4);
+        }
+
+        .laptop-navigation.hidden {
+            display: none;
+        }
+
+        .laptop-nav-prev {
+            left: -20px;
+        }
+
+        .laptop-nav-next {
+            right: -20px;
         }
 
         .msi-rec-header {
@@ -631,7 +671,7 @@
     <div class="container">
         <header>
             <div class="header-content">
-                <img src="https://raw.githubusercontent.com/Sam-MSI/msi-guide/main/Logos/2021-msi-series_logo-gaming.png" alt="MSI Logo" style="height: 60px; width: auto; margin-right: 20px; object-fit: contain;">
+                <img src="Images/Logos/2021-msi-series_logo-gaming.png" alt="MSI Logo" style="height: 60px; width: auto; margin-right: 20px; object-fit: contain;">
                 <div class="header-title">
                     <h1>MSI - GUIDE D'ACHAT PC PORTABLE</h1>
                 </div>
@@ -764,17 +804,17 @@
         // Obtenir la description pour un usage
         function getUsageDescription(usageKey) {
             const descriptions = {
-                'navigation_internet_multimedia': 'Web, streaming, réseaux sociaux',
+                'navigation_internet_multimedia': 'Web, streaming, réseaux sociaux, bureautique légère',
                 'data_analyse': 'Analyse de données, Excel avancé, bases de données',
-                'communication': 'Appels à distance, Visioconférence, Teams',
+                'communication': 'Visioconférence, Teams, présentations professionnelles',
                 'etudes_elearning': 'Cours en ligne, prise de notes, recherches académiques',
-                'programmation': 'Développement, IDE, compilation',
-                'jeuxvideo': 'Jeux AAA, compétitions en ligne, streaming',
-                'montage_photo': 'Suite Adobe (Photoshop, Lightroom)',
-                'montage_video': 'Suite Adobe (Premiere Pro, After Effects)',
-                'creation_2d': 'Suite Adobe (Illustrator, InDesign), Modélisation et animation 2D professionnelle',
+                'programmation': 'Développement, IDE, compilation, serveurs locaux',
+                'jeuxvideo': 'Gaming, e-sport, streaming de jeux',
+                'montage_photo': 'Photoshop, Lightroom, retouche d\'images professionnelle',
+                'montage_video': 'Premiere Pro, After Effects, production vidéo',
+                'creation_2d': 'Illustrator, InDesign, design graphique',
                 'creation_3d': 'Modélisation et animation 3D professionnelle',
-                'beaucoup_de_deplacements': 'Besoin de mobilité, autonomie et légèreté'
+                'beaucoup_de_deplacements': 'Mobilité maximale, autonomie importante, légèreté'
             };
             return descriptions[usageKey] || 'Usage spécialisé';
         }
@@ -1018,6 +1058,13 @@
                 return wifi1 > wifi2;
             }
             
+            // Mobilité (poids) - Plus c'est léger, mieux c'est
+            if (spec.includes('mobility') || spec.includes('poids')) {
+                const weight1 = extractWeight(value1);
+                const weight2 = extractWeight(value2);
+                return weight1 < weight2; // Plus léger est mieux
+            }
+            
             return false;
         }
 
@@ -1027,7 +1074,6 @@
             // Comparaison directe puisque les valeurs sont harmonisées
             const position = rankingArray.findIndex(item => item === value);
             
-            console.log(`Ranking pour "${value}": position ${position}`);
             return position === -1 ? 999 : position;
         }
 
@@ -1043,6 +1089,16 @@
                 return extractNumber(storage) * 1000;
             }
             return extractNumber(storage);
+        }
+
+        function extractWeight(weightStr) {
+            if (!weightStr) return 999; // Poids très élevé si pas d'info
+            const str = String(weightStr).toLowerCase();
+            const match = str.match(/(\d+[,.]?\d*)\s*kg/);
+            if (match) {
+                return parseFloat(match[1].replace(',', '.'));
+            }
+            return 999;
         }
 
         function calculateFallbackDistance(laptopValue, requiredValue, specName) {
@@ -1078,21 +1134,57 @@
                 return Math.abs(laptopSize - requiredSize) / 256;
             }
             
+            // Mobilité (poids) - Utiliser les kg
+            if (specName === 'mobility') {
+                const laptopWeight = extractWeight(laptopValue);
+                const requiredWeight = extractWeight(requiredValue);
+                
+                // Retourner la différence absolue en paliers de 0.2kg
+                return Math.abs(laptopWeight - requiredWeight) / 0.2;
+            }
+            
             return 10; // Distance par défaut pour les autres specs
         }
 
-        function findMatchingLaptop(specs, level) {
-            let bestMatch = null;
-            let smallestDistance = Infinity;
+        // NOUVELLE FONCTION: Vérification du prix pour les niveaux minimum et recommandé
+        function isWithinPriceBudget(laptop, level, baseLaptopPrice) {
+            // Appliquer la règle de prix pour les niveaux "minimum" et "recommande"
+            if ((level === 'minimum' || level === 'recommande') && baseLaptopPrice) {
+                const maxPrice = baseLaptopPrice * 1.3; // +30% max
+                if (laptop.specs.price > maxPrice) {
+                    console.log(`💰 Prix exclu: ${laptop.name} (${laptop.specs.price}€) > ${maxPrice.toFixed(0)}€ (base: ${baseLaptopPrice}€)`);
+                    return false;
+                }
+            }
+            return true;
+        }
 
-            console.log(`\n🔍 Recherche du laptop le plus proche pour: ${level}`);
+        function findMatchingLaptops(specs, level, maxResults = 3, excludeLaptops = [], baseLaptopPrice = null) {
+            let matches = [];
 
-            // Premier passage : chercher les laptops qui respectent les critères
+            console.log(`\n🔍 Recherche des ${maxResults} laptops pour: ${level}`);
+            if (excludeLaptops.length > 0) {
+                console.log(`❌ Exclusions: ${excludeLaptops.map(l => l.name).join(', ')}`);
+            }
+            if (baseLaptopPrice) {
+                console.log(`💰 Prix de référence pour ${level}: ${baseLaptopPrice}€ (max autorisé: ${(baseLaptopPrice * 1.3).toFixed(0)}€)`);
+            }
+
+            // Chercher uniquement les laptops qui respectent les critères (sans fallback)
             laptopsData.forEach((laptop, index) => {
                 // Filtrer la console Claw si l'usage "jeuxvideo" n'est pas sélectionné
                 if (laptop.name.startsWith('Claw') && !selectedUsages.includes('jeuxvideo')) {
-                    console.log(`⚠️ ${laptop.name} exclue car usage "Jeux-vidéo" non sélectionné`);
-                    return; // Passer au laptop suivant
+                    return;
+                }
+
+                // Exclure les laptops déjà utilisés
+                if (excludeLaptops.some(excluded => excluded.name === laptop.name)) {
+                    return;
+                }
+
+                // ✨ NOUVEAU: Vérifier le budget pour le niveau minimum
+                if (!isWithinPriceBudget(laptop, level, baseLaptopPrice)) {
+                    return;
                 }
 
                 let totalDistance = 0;
@@ -1117,64 +1209,72 @@
                 });
 
                 if (isValid) {
-                    console.log(`${laptop.name}: Distance totale ${totalDistance} (${distanceDetails.join(', ')})`);
-
-                    if (totalDistance < smallestDistance) {
-                        smallestDistance = totalDistance;
-                        bestMatch = laptop;
-                    }
+                    console.log(`${laptop.name}: Distance totale ${totalDistance}, Prix: ${laptop.specs.price}€ (${distanceDetails.join(', ')})`);
+                    matches.push({ laptop, distance: totalDistance });
                 }
             });
 
-            // Si aucun laptop ne correspond, prendre le plus proche même en dessous des critères
-            if (!bestMatch) {
-                console.log("🔄 Aucun laptop ne respecte les critères, recherche du plus proche...");
-                smallestDistance = Infinity;
+            // Trier par distance et prendre les meilleurs
+            matches.sort((a, b) => a.distance - b.distance);
+            const bestMatches = matches.slice(0, maxResults).map(m => m.laptop);
+
+            console.log(`🏆 Matches trouvés: ${bestMatches.map(l => `${l.name} (${l.specs.price}€)`).join(', ')}`);
+            return bestMatches;
+        }
+
+        function findMatchingLaptopsWithFallback(specs, level, maxResults = 1, excludeLaptops = [], baseLaptopPrice = null) {
+            let matches = [];
+
+            console.log(`🔄 Recherche fallback pour: ${level}`);
+            
+            laptopsData.forEach((laptop, index) => {
+                // Eviter les doublons et filtrer Claw
+                if ((laptop.name.startsWith('Claw') && !selectedUsages.includes('jeuxvideo')) ||
+                    excludeLaptops.some(excluded => excluded.name === laptop.name)) {
+                    return;
+                }
+
+                // ✨ NOUVEAU: Vérifier le budget pour le niveau minimum (même en fallback)
+                if (!isWithinPriceBudget(laptop, level, baseLaptopPrice)) {
+                    return;
+                }
+
+                let totalDistance = 0;
+                let distanceDetails = [];
                 
-                laptopsData.forEach((laptop, index) => {
-                    // Filtrer la console Claw si l'usage "jeuxvideo" n'est pas sélectionné (même en fallback)
-                    if (laptop.name.startsWith('Claw') && !selectedUsages.includes('jeuxvideo')) {
-                        console.log(`⚠️ ${laptop.name} exclue en fallback car usage "Jeux-vidéo" non sélectionné`);
-                        return; // Passer au laptop suivant
-                    }
-
-                    let totalDistance = 0;
-                    let distanceDetails = [];
-                    
-                    // Calculer la distance pour chaque spec importante (sans exclusion)
-                    const categories = specs[level];
-                    Object.keys(categories).forEach(category => {
-                        Object.keys(categories[category]).forEach(specName => {
-                            const requiredValue = categories[category][specName][level];
-                            if (requiredValue && laptop.specs[specName]) {
-                                let distance = calculateDistance(laptop.specs[specName], requiredValue, specName);
-                                // Convertir les distances négatives en distances positives pour la comparaison
-                                if (distance === -1) {
-                                    distance = calculateFallbackDistance(laptop.specs[specName], requiredValue, specName);
-                                }
-                                totalDistance += Math.abs(distance);
-                                distanceDetails.push(`${specName}: ${distance}`);
+                // Calculer la distance pour chaque spec importante (sans exclusion)
+                const categories = specs[level];
+                Object.keys(categories).forEach(category => {
+                    Object.keys(categories[category]).forEach(specName => {
+                        const requiredValue = categories[category][specName][level];
+                        if (requiredValue && laptop.specs[specName]) {
+                            let distance = calculateDistance(laptop.specs[specName], requiredValue, specName);
+                            // Convertir les distances négatives en distances positives pour la comparaison
+                            if (distance === -1) {
+                                distance = calculateFallbackDistance(laptop.specs[specName], requiredValue, specName);
                             }
-                        });
+                            totalDistance += Math.abs(distance);
+                            distanceDetails.push(`${specName}: ${distance}`);
+                        }
                     });
-
-                    console.log(`${laptop.name} (fallback): Distance totale ${totalDistance} (${distanceDetails.join(', ')})`);
-
-                    if (totalDistance < smallestDistance) {
-                        smallestDistance = totalDistance;
-                        bestMatch = laptop;
-                    }
                 });
-            }
 
-            console.log(`🏆 Meilleur match: ${bestMatch?.name} avec une distance de ${smallestDistance}`);
-            return bestMatch;
+                console.log(`${laptop.name} (fallback): Distance totale ${totalDistance}, Prix: ${laptop.specs.price}€ (${distanceDetails.join(', ')})`);
+                matches.push({ laptop, distance: totalDistance, isFallback: true });
+            });
+
+            // Trier par distance et prendre les meilleurs
+            matches.sort((a, b) => a.distance - b.distance);
+            const bestMatches = matches.slice(0, maxResults).map(m => m.laptop);
+
+            console.log(`🏆 Fallback matches: ${bestMatches.map(l => `${l.name} (${l.specs.price}€)`).join(', ')}`);
+            return bestMatches;
         }
 
         function calculateDistance(laptopValue, requiredValue, specName) {
             if (!laptopValue || !requiredValue) return -1;
             
-            // Condition spéciale pour les GPUs intégrés
+            // Condition spéciale pour les GPUs
             if (specName === 'gpu') {
                 const integratedGPUs = [
                     "Intel Arc 140V GPU",
@@ -1183,11 +1283,19 @@
                     "Integree : Intel UHD Graphics"
                 ];
                 
-                // Si l'usage demande un GPU intégré, le laptop doit aussi avoir un GPU intégré
-                if (integratedGPUs.includes(requiredValue)) {
+                // Si l'usage demande un GPU intégré ET que jeuxvideo n'est pas sélectionné
+                if (integratedGPUs.includes(requiredValue) && !selectedUsages.includes('jeuxvideo')) {
+                    // Accepter SEULEMENT les GPU intégrés, exclure tous les GPU dédiés
+                    if (!integratedGPUs.includes(laptopValue)) {
+                        console.log(`  GPU: Exclusion usage bureautique - "${requiredValue}" demandé mais laptop a dédié "${laptopValue}"`);
+                        return -1;
+                    }
+                }
+                // Si l'usage demande un GPU intégré (logique normale)
+                else if (integratedGPUs.includes(requiredValue)) {
                     if (!integratedGPUs.includes(laptopValue)) {
                         console.log(`  GPU: Exclusion - Usage demande intégré "${requiredValue}" mais laptop a dédié "${laptopValue}"`);
-                        return -1; // Exclure les GPUs dédiés quand on veut de l'intégré
+                        return -1;
                     }
                 }
             }
@@ -1222,6 +1330,15 @@
                 return Math.floor((laptopSize - requiredSize) / 256); // Distance par paliers de 256GB
             }
             
+            // Mobilité (poids) - Utiliser les kg
+            if (specName === 'mobility') {
+                const laptopWeight = extractWeight(laptopValue);
+                const requiredWeight = extractWeight(requiredValue);
+                
+                if (laptopWeight > requiredWeight) return -1; // Trop lourd
+                return Math.floor((requiredWeight - laptopWeight) * 5); // Distance par paliers de 0.2kg
+            }
+            
             return 0; // Distance nulle pour les autres specs
         }
 
@@ -1238,60 +1355,104 @@
             return weights[specName] || 5;
         }
 
-        function generateMSIRecommendation(laptop) {
-            if (!laptop) return '';
+        function generateMSIRecommendations(laptops, level) {
+            if (!laptops || laptops.length === 0) return '';
+            
+            const containerId = `recommendations-${level}`;
+            
+            // Génération du HTML avec navigation (sans compteur)
+            return `
+                <div class="msi-recommendation" id="${containerId}">
+                    ${laptops.length > 1 ? `
+                        <button class="laptop-navigation laptop-nav-prev" onclick="navigateLaptop('${containerId}', -1)">‹</button>
+                        <button class="laptop-navigation laptop-nav-next" onclick="navigateLaptop('${containerId}', 1)">›</button>
+                    ` : ''}
+                    
+                    <div class="laptop-content">
+                        ${laptops.map((laptop, index) => `
+                            <div class="laptop-slide" data-laptop-index="${index}" ${index === 0 ? '' : 'style="display: none;"'}>
+                                <div class="msi-rec-header">
+                                    <div class="msi-rec-title">${laptop.name}</div>
+                                    <div class="msi-rec-price">${laptop.specs.price}€</div>
+                                </div>
+                                
+                                ${laptop.image ? `<img src="${laptop.image}" alt="${laptop.name}" class="msi-product-image" onerror="this.style.display='none'">` : ''}
+                                
+                                <div class="msi-spec-grid">
+                                    <div class="msi-spec-item">
+                                        <div class="msi-spec-label">Processeur</div>
+                                        <div class="msi-spec-value">${laptop.specs.cpu ? laptop.specs.cpu.split(' ').slice(0, 4).join(' ') : 'N/A'}</div>
+                                    </div>
+                                    <div class="msi-spec-item">
+                                        <div class="msi-spec-label">Carte graphique</div>
+                                        <div class="msi-spec-value">${laptop.specs.gpu ? laptop.specs.gpu.replace(/NVIDIA®?\s*GeForce\s*/i, '').replace(/®|™/g, '') : 'N/A'}</div>
+                                    </div>
+                                    <div class="msi-spec-item">
+                                        <div class="msi-spec-label">Mémoire RAM</div>
+                                        <div class="msi-spec-value">${laptop.specs.ram ? laptop.specs.ram.split(' ').slice(0, 3).join(' ') : 'N/A'}</div>
+                                    </div>
+                                    <div class="msi-spec-item">
+                                        <div class="msi-spec-label">Stockage</div>
+                                        <div class="msi-spec-value">${laptop.specs.ssd || 'N/A'}</div>
+                                    </div>
+                                    <div class="msi-spec-item">
+                                        <div class="msi-spec-label">Écran</div>
+                                        <div class="msi-spec-value">${laptop.specs.screen_quality || 'N/A'}${laptop.specs.screen_refresh ? ' - ' + laptop.specs.screen_refresh : ''}</div>
+                                    </div>
+                                    <div class="msi-spec-item">
+                                        <div class="msi-spec-label">Poids</div>
+                                        <div class="msi-spec-value">${laptop.specs.mobility || 'N/A'}</div>
+                                    </div>
+                                </div>
+                                
+                                <a href="${laptop.specs.link}" target="_blank" class="msi-buy-btn">
+                                    Voir chez ${getResellerName(laptop.reseller)}
+                                </a>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
 
-            // Mapping des noms de revendeurs pour l'affichage
+        function getResellerName(reseller) {
             const resellerNames = {
                 'MSI-Store': 'MSI',
                 'LDLC': 'LDLC',
                 'Boulanger': 'Boulanger',
                 'Fnac': 'Fnac'
             };
+            return resellerNames[reseller] || reseller;
+        }
+
+        // Fonction de navigation entre les laptops
+        function navigateLaptop(containerId, direction) {
+            const container = document.getElementById(containerId);
+            const slides = container.querySelectorAll('.laptop-slide');
+            const currentSlide = container.querySelector('.laptop-slide:not([style*="display: none"])');
+            const currentIndex = parseInt(currentSlide.dataset.laptopIndex);
             
-            const resellerName = resellerNames[laptop.reseller] || laptop.reseller;
+            let newIndex = currentIndex + direction;
             
-            return `
-                <div class="msi-recommendation">
-                    <div class="msi-rec-header">
-                        <div class="msi-rec-title">${laptop.name}</div>
-                        <div class="msi-rec-price">${laptop.specs.price}€</div>
-                    </div>
-                    
-                    ${laptop.image ? `<img src="${laptop.image}" alt="${laptop.name}" class="msi-product-image" onerror="this.style.display='none'">` : ''}
-                    
-                    <div class="msi-spec-grid">
-                        <div class="msi-spec-item">
-                            <div class="msi-spec-label">Processeur</div>
-                            <div class="msi-spec-value">${laptop.specs.cpu ? laptop.specs.cpu.split(' ').slice(0, 4).join(' ') : 'N/A'}</div>
-                        </div>
-                        <div class="msi-spec-item">
-                            <div class="msi-spec-label">Carte graphique</div>
-                            <div class="msi-spec-value">${laptop.specs.gpu ? laptop.specs.gpu.replace(/NVIDIA®?\s*GeForce\s*/i, '').replace(/®|™/g, '') : 'N/A'}</div>
-                        </div>
-                        <div class="msi-spec-item">
-                            <div class="msi-spec-label">Mémoire RAM</div>
-                            <div class="msi-spec-value">${laptop.specs.ram ? laptop.specs.ram.split(' ').slice(0, 3).join(' ') : 'N/A'}</div>
-                        </div>
-                        <div class="msi-spec-item">
-                            <div class="msi-spec-label">Stockage</div>
-                            <div class="msi-spec-value">${laptop.specs.ssd || 'N/A'}</div>
-                        </div>
-                        <div class="msi-spec-item">
-                            <div class="msi-spec-label">Écran</div>
-                            <div class="msi-spec-value">${laptop.specs.screen_quality || 'N/A'}${laptop.specs.screen_refresh ? ' - ' + laptop.specs.screen_refresh : ''}</div>
-                        </div>
-                        <div class="msi-spec-item">
-                            <div class="msi-spec-label">Poids</div>
-                            <div class="msi-spec-value">${laptop.specs.mobility || 'N/A'}</div>
-                        </div>
-                    </div>
-                    
-                    <a href="${laptop.specs.link}" target="_blank" class="msi-buy-btn">
-                        Voir chez ${resellerName}
-                    </a>
-                </div>
-            `;
+            // Gérer le bouclage
+            if (newIndex >= slides.length) newIndex = 0;
+            if (newIndex < 0) newIndex = slides.length - 1;
+            
+            // Cacher l'ancien slide
+            currentSlide.style.display = 'none';
+            
+            // Afficher le nouveau slide
+            slides[newIndex].style.display = 'block';
+            
+            // Animation d'entrée
+            slides[newIndex].style.opacity = '0';
+            slides[newIndex].style.transform = 'translateX(' + (direction > 0 ? '20px' : '-20px') + ')';
+            
+            setTimeout(() => {
+                slides[newIndex].style.transition = 'all 0.3s ease';
+                slides[newIndex].style.opacity = '1';
+                slides[newIndex].style.transform = 'translateX(0)';
+            }, 10);
         }
 
         function generateConfigCards(specs) {
@@ -1301,11 +1462,96 @@
                 { key: 'ideal', title: 'Configuration Idéale', description: 'Pour une expérience optimale sans compromis' }
             ];
 
+            // Structure pour stocker les résultats
+            const results = {
+                minimum: [],
+                recommande: [],
+                ideal: []
+            };
+
+            let globalExclusions = [];
+            // ✨ NOUVEAU: Variables pour stocker les prix de référence
+            const basePrices = {
+                minimum: null,
+                recommande: null,
+                ideal: null
+            };
+
+            // Ordre de priorité : idéal → recommandé → minimum
+            const priorityOrder = ['ideal', 'recommande', 'minimum'];
+            
+            console.log('\n🎯 === PHASE 1: Premier choix pour chaque niveau ===');
+            // Phase 1: Premier choix pour chaque niveau (idéal → recommandé → minimum)
+            for (const levelKey of priorityOrder) {
+                console.log(`\n🔍 Phase 1 - ${levelKey.toUpperCase()}`);
+                const matchingLaptops = findMatchingLaptops(specs, levelKey, 1, globalExclusions);
+                
+                if (matchingLaptops.length > 0) {
+                    results[levelKey].push(matchingLaptops[0]);
+                    globalExclusions.push(matchingLaptops[0]);
+                    // ✨ NOUVEAU: Sauvegarder le prix de référence
+                    basePrices[levelKey] = matchingLaptops[0].specs.price;
+                    console.log(`✅ ${levelKey}: ${matchingLaptops[0].name} sélectionné (${matchingLaptops[0].specs.price}€)`);
+                } else {
+                    // Fallback uniquement pour le premier choix
+                    console.log(`🔄 Fallback pour ${levelKey}`);
+                    const fallbackLaptops = findMatchingLaptopsWithFallback(specs, levelKey, 1, globalExclusions);
+                    if (fallbackLaptops.length > 0) {
+                        results[levelKey].push(fallbackLaptops[0]);
+                        globalExclusions.push(fallbackLaptops[0]);
+                        // ✨ NOUVEAU: Sauvegarder le prix de référence (même en fallback)
+                        basePrices[levelKey] = fallbackLaptops[0].specs.price;
+                        console.log(`✅ ${levelKey} (fallback): ${fallbackLaptops[0].name} sélectionné (${fallbackLaptops[0].specs.price}€)`);
+                    } else {
+                        console.log(`❌ ${levelKey}: Aucun PC trouvé même en fallback`);
+                    }
+                }
+            }
+
+            console.log('\n🎯 === PHASE 2: Deuxième choix pour chaque niveau ===');
+            // Phase 2: Deuxième choix (idéal → recommandé → minimum, sans fallback)
+            for (const levelKey of priorityOrder) {
+                if (results[levelKey].length < 2) {
+                    console.log(`\n🔍 Phase 2 - ${levelKey.toUpperCase()}`);
+                    // ✨ NOUVEAU: Passer le prix de référence pour les vérifications de budget
+                    const matchingLaptops = findMatchingLaptops(specs, levelKey, 1, globalExclusions, basePrices[levelKey]);
+                    if (matchingLaptops.length > 0) {
+                        results[levelKey].push(matchingLaptops[0]);
+                        globalExclusions.push(matchingLaptops[0]);
+                        console.log(`✅ ${levelKey} (2ème): ${matchingLaptops[0].name} sélectionné (${matchingLaptops[0].specs.price}€)`);
+                    } else {
+                        console.log(`❌ ${levelKey} (2ème): Aucun PC correspondant trouvé dans le budget`);
+                    }
+                }
+            }
+
+            console.log('\n🎯 === PHASE 3: Troisième choix pour chaque niveau ===');
+            // Phase 3: Troisième choix (idéal → recommandé → minimum, sans fallback)
+            for (const levelKey of priorityOrder) {
+                if (results[levelKey].length < 3) {
+                    console.log(`\n🔍 Phase 3 - ${levelKey.toUpperCase()}`);
+                    // ✨ NOUVEAU: Passer le prix de référence pour les vérifications de budget
+                    const matchingLaptops = findMatchingLaptops(specs, levelKey, 1, globalExclusions, basePrices[levelKey]);
+                    if (matchingLaptops.length > 0) {
+                        results[levelKey].push(matchingLaptops[0]);
+                        globalExclusions.push(matchingLaptops[0]);
+                        console.log(`✅ ${levelKey} (3ème): ${matchingLaptops[0].name} sélectionné (${matchingLaptops[0].specs.price}€)`);
+                    } else {
+                        console.log(`❌ ${levelKey} (3ème): Aucun PC correspondant trouvé dans le budget`);
+                    }
+                }
+            }
+
+            console.log('\n📊 === RÉSULTATS FINAUX ===');
+            Object.entries(results).forEach(([level, laptops]) => {
+                const prices = laptops.map(l => `${l.specs.price}€`).join(', ');
+                console.log(`${level.toUpperCase()}: ${laptops.map(l => l.name).join(', ') || 'Aucun'} (${prices})`);
+            });
+
+            // Générer le HTML avec les résultats
             return levels.map(level => {
                 const spec = specs[level.key];
-                
-                // Trouver le PC MSI correspondant
-                const matchingLaptop = findMatchingLaptop(specs, level.key);
+                const matchingLaptops = results[level.key];
                 
                 return `
                     <div class="config-card ${level.key}">
@@ -1343,7 +1589,7 @@
                             `;
                         }).join('')}
                         
-                        ${matchingLaptop ? generateMSIRecommendation(matchingLaptop) : ''}
+                        ${matchingLaptops.length > 0 ? generateMSIRecommendations(matchingLaptops, level.key) : ''}
                     </div>
                 `;
             }).join('');
@@ -1353,6 +1599,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadData();
         });
+
+        // Fonction globale pour la navigation (nécessaire pour onclick)
+        window.navigateLaptop = navigateLaptop;
     </script>
 </body>
 </html>
