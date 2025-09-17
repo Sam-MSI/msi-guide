@@ -86,19 +86,18 @@
             flex: 1;
         }
 
-        h1 {
-            font-size: 3.2rem;
-            margin: 0;
-            font-weight: 700;
-            text-shadow: 0 3px 6px rgba(0,0,0,0.5);
-            background: linear-gradient(45deg, #ffffff 0%, #f0f0f0 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: 1px;
-        }
-
-        .main-content {
+h1 {
+    font-size: 3.2rem;
+    margin: 0;
+    font-weight: 700;
+    color: white;
+    text-shadow: 
+        -1px -1px 2px rgba(0,0,0,0.8),
+         1px -1px 2px rgba(0,0,0,0.8),
+        -1px  1px 2px rgba(0,0,0,0.8),
+         1px  1px 2px rgba(0,0,0,0.8);
+    letter-spacing: 1px;
+}        .main-content {
             padding: 50px 40px;
         }
 
@@ -129,21 +128,14 @@
         h2 {
             color: #1a1a1a;
             margin-bottom: 30px;
-            font-size: 2.2rem;
+            font-size: 3rem;
             font-weight: 600;
             display: flex;
             align-items: center;
             position: relative;
             z-index: 1;
         }
-
-        h2::before {
-            content: "⚙️";
-            margin-right: 15px;
-            font-size: 1.6rem;
-            filter: drop-shadow(0 2px 4px rgba(204, 0, 0, 0.3));
-        }
-
+        
         .usage-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -671,16 +663,24 @@
     <div class="container">
         <header>
             <div class="header-content">
-                <img src="https://raw.githubusercontent.com/Sam-MSI/msi-guide/main/Logos/2021-msi-series_logo-gaming.png" alt="MSI Logo" style="height: 60px; width: auto; margin-right: 20px; object-fit: contain;">
+                <img src="https://raw.githubusercontent.com/Sam-MSI/msi-guide/main/Logos/logo_msi_gaming.png" alt="MSI Logo" style="height: 200px; width: auto; margin-top: -4px; margin-right: 20px; object-fit: contain;">
                 <div class="header-title">
-                    <h1>MSI - GUIDE D'ACHAT PC PORTABLE</h1>
+                    <h1>GUIDE D'ACHAT PC PORTABLE</h1>
                 </div>
             </div>
         </header>
 
         <div class="main-content">
             <div class="section">
-                <h2>1. Sélectionnez vos usages</h2>
+                <h2 style="align-items: center;">
+    <img src="https://raw.githubusercontent.com/Sam-MSI/msi-guide/main/Logos/lucky_pose_4.png" 
+         alt="Lucky pose 4" 
+         style="height: 200px; width: auto; margin-right: 15px; filter: drop-shadow(0 2px 4px rgba(204, 0, 0, 0.4));">
+    Sélectionnez vos usages
+    <img src="https://raw.githubusercontent.com/Sam-MSI/msi-guide/main/Logos/lucky_pose_3.png" 
+         alt="Lucky pose 3" 
+         style="height: 200px; width: auto; margin-left: 15px; filter: drop-shadow(0 2px 4px rgba(204, 0, 0, 0.4));">
+</h2>
                 <p style="margin-bottom: 25px; color: #666; line-height: 1.5;">Cliquez sur votre usage principal, puis ajoutez des usages secondaires. Un numéro apparaîtra pour indiquer l'ordre de priorité.</p>
                 
                 <div class="usage-grid" id="usageGrid">
@@ -695,7 +695,15 @@
 
             <div class="recommendations" id="recommendations">
                 <div class="section">
-                    <h2>2. Vos recommandations personnalisées</h2>
+                    <h2 class="lucky-title" style="align-items: center;">
+                        <img src="https://raw.githubusercontent.com/Sam-MSI/msi-guide/main/Logos/lucky_thinks.png" 
+                             alt="Lucky" 
+                             style="height: 200px; width: auto; margin-right: 15px; filter: drop-shadow(0 2px 4px rgba(204, 0, 0, 0.4));">
+                        Les recommandations de Lucky
+                        <img src="https://raw.githubusercontent.com/Sam-MSI/msi-guide/main/Logos/lucky_pose_2.png" 
+     alt="Lucky pose 2" 
+     style="height: 200px; width: auto; margin-left: 15px; filter: drop-shadow(0 2px 4px rgba(204, 0, 0, 0.4));">
+                    </h2>
                     <div class="selected-usages" id="selectedUsages"></div>
                     <div class="config-grid" id="configGrid"></div>
                 </div>
