@@ -136,6 +136,38 @@ h1 {
             z-index: 1;
         }
         
+         /* Style spécial pour le bloc étudiant */
+        .student-section {
+            background: #000000;
+            color: white;
+            border-left: 6px solid #CC0000;
+            min-height: 800px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .student-section::before {
+            background: linear-gradient(90deg, transparent 0%, rgba(204, 0, 0, 0.1) 100%);
+        }
+
+        .student-content {
+            text-align: center;
+            z-index: 2;
+            position: relative;
+        }
+
+        /* Placeholder pour l'image de fond */
+.student-bg-image {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: auto;
+    position: relative;
+    z-index: 1;
+}
         .usage-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -710,6 +742,15 @@ h1 {
                     </h2>
                     <div class="selected-usages" id="selectedUsages"></div>
                     <div class="config-grid" id="configGrid"></div>
+                </div>
+<!-- NOUVEAU BLOC ÉTUDIANT -->
+                <div class="section student-section">
+                    <!-- Placeholder pour l'image de fond - Remplacez src="" par le lien de votre image -->
+                    <img src="https://raw.githubusercontent.com/Sam-MSI/msi-guide/main/Logos/bloc-3.png" alt="Student Flyer Background" class="student-bg-image">
+                    
+                    <div class="student-content">
+                        <!-- Contenu vide pour l'instant - à ajouter selon vos besoins -->
+                    </div>
                 </div>
             </div>
         </div>
