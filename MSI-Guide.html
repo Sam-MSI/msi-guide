@@ -48,14 +48,14 @@
             border: 1px solid rgba(204, 0, 0, 0.1);
         }
 
-        header {
-            background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2a2a2a 100%);
-            color: white;
-            padding: 40px 50px;
-            position: relative;
-            overflow: visible;
-        }
-
+header {
+    background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2a2a2a 100%);
+    color: white;
+    padding: 40px 50px;
+    position: relative;
+    overflow: visible;
+    border-radius: 20px 20px 0 0;
+}
         header::before {
             content: '';
             position: absolute;
@@ -554,8 +554,8 @@ h1 {
         }
 
         .msi-rec-title::before {
-            content: "🖥️";
-            margin-right: 10px;
+            content: "MSI";
+            margin-right: 4px;
         }
 
         .msi-rec-price {
@@ -564,19 +564,19 @@ h1 {
             color: #CC0000;
         }
 
-        .msi-product-image {
-            width: 100%;
-            max-width: 300px;
-            height: auto;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            object-fit: cover;
-        }
-
+.msi-product-image {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    border-radius: 8px;
+    margin: 0 auto 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    object-fit: cover;
+    display: block;
+}
         .msi-spec-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: 15px;
             margin-bottom: 20px;
         }
@@ -603,53 +603,59 @@ h1 {
             line-height: 1.2;
         }
 
-        .msi-buy-btn {
-            background: white !important;
-            background-image: none !important;
-            color: #333 !important;
-            text-decoration: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            transition: all 0.3s ease;
-            border: 2px solid #ddd;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
+.msi-buy-btn {
+    background: white !important;
+    background-image: none !important;
+    color: #333 !important;
+    text-decoration: none;
+    padding: 18px 40px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: block;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    border: 2px solid #ddd;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    margin: 0 auto;
+    text-align: center;
+    width: fit-content;
+}
 
-        .msi-buy-btn:hover {
-            background: white !important;
-            background-image: none !important;
-            border-color: #CC0000;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-            transform: translateY(-2px);
-        }
+.msi-buy-btn:hover {
+    background: white !important;
+    background-image: none !important;
+    border-color: #CC0000;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
 
-        .msi-buy-btn .reseller-logo {
-            height: 20px;
-            width: auto;
-            margin-left: 15px;
-            object-fit: contain;
-        }
-
-        .selected-usages {
-            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-            padding: 25px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            border-left: 5px solid #CC0000;
-            box-shadow: 
-                0 5px 20px rgba(0,0,0,0.08),
-                inset 0 1px 0 rgba(255,255,255,0.8);
-        }
-
+.msi-buy-btn .reseller-logo {
+    height: 20px;
+    width: auto;
+    margin-left: 15px;
+    object-fit: contain;
+}
+.selected-usages {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    border-left: 5px solid #CC0000;
+    box-shadow: 
+        0 5px 20px rgba(0,0,0,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
         .config-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            grid-template-columns: minmax(450px, 800px);
             gap: 25px;
             margin-top: 25px;
+            justify-content: center;
         }
 
         .recommendations {
@@ -1432,18 +1438,17 @@ h1 {
                                 
                                 <div class="msi-spec-grid">
                                     <div class="msi-spec-item">
-                                        <div class="msi-spec-label">Processeur</div>
-                                        <div class="msi-spec-value">${laptop.specs.cpu ? laptop.specs.cpu.split(' ').slice(0, 4).join(' ') : 'N/A'}</div>
-                                    </div>
-                                    <div class="msi-spec-item">
-                                        <div class="msi-spec-label">Carte graphique</div>
-                                        <div class="msi-spec-value">${laptop.specs.gpu ? laptop.specs.gpu.replace(/NVIDIA®?\s*GeForce\s*/i, '').replace(/®|™/g, '') : 'N/A'}</div>
-                                    </div>
-                                    <div class="msi-spec-item">
-                                        <div class="msi-spec-label">Mémoire RAM</div>
-                                        <div class="msi-spec-value">${laptop.specs.ram ? laptop.specs.ram.split(' ').slice(0, 3).join(' ') : 'N/A'}</div>
-                                    </div>
-                                    <div class="msi-spec-item">
+    <div class="msi-spec-label">Processeur</div>
+    <div class="msi-spec-value">${laptop.specs.cpu || 'N/A'}</div>
+</div>
+<div class="msi-spec-item">
+    <div class="msi-spec-label">Carte graphique</div>
+    <div class="msi-spec-value">${laptop.specs.gpu || 'N/A'}</div>
+</div>
+<div class="msi-spec-item">
+    <div class="msi-spec-label">Mémoire RAM</div>
+    <div class="msi-spec-value">${laptop.specs.ram || 'N/A'}</div>
+</div>                                    <div class="msi-spec-item">
                                         <div class="msi-spec-label">Stockage</div>
                                         <div class="msi-spec-value">${laptop.specs.ssd || 'N/A'}</div>
                                     </div>
