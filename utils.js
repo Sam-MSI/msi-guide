@@ -455,4 +455,214 @@ export function findMatchingLaptops(specs, level, maxResults = 3, excludeLaptops
             
             return 0; // Distance nulle pour les autres specs
         }
+        // Rendu des cartes d'usage
+        export function renderUsageCards() {
+            const grid = document.getElementById('usageGrid');
+            
+            const cards = Object.entries(usageSpecs).map(([key, usage]) => `
+                <div class="usage-card" data-usage="${key}">
+                    <div class="usage-number">1</div>
+                    <img src="${usage.image}" alt="${usage.name}" class="usage-icon" onerror="this.style.display='none';">
+                    <div class="usage-title">${usage.name}</div>
+                    <div class="usage-desc">${getUsageDescription(key)}</div>
+                </div>
+            `).join('');
+            
+            grid.innerHTML = cards;
+            
+            // Ajouter les événements
+            setupEventListeners();
+        }
+
+
+        // Configuration des événements
+        export function setupEventListeners() {
+            const cards = document.querySelectorAll('.usage-card');
+            const generateBtn = document.getElementById('generateBtn');
+            const resetBtn = document.getElementById('resetBtn');
+
+            cards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const usage = this.dataset.usage;
+                    const index = selectedUsages.indexOf(usage);
+                    
+                    if (index > -1) {
+                        // Désélectionner
+                        selectedUsages.splice(index, 1);
+                        this.classList.remove('selected');
+                        updateNumbers();
+                    } else {
+                        // Sélectionner
+                        selectedUsages.push(usage);
+                        this.classList.add('selected');
+                        updateNumbers();
+                    }
+                    
+                    updateGenerateButton();
+                });
+            });
+
+            generateBtn.addEventListener('click', generateRecommendations);
+            resetBtn.addEventListener('click', resetSelections);
+        }
+
+        export function updateNumbers() {
+            const cards = document.querySelectorAll('.usage-card');
+            cards.forEach(card => {
+                const usage = card.dataset.usage;
+                const index = selectedUsages.indexOf(usage);
+                const numberElement = card.querySelector('.usage-number');
+                
+                if (index > -1) {
+                    numberElement.textContent = index + 1;
+                }
+            });
+        }
+
+        export function updateGenerateButton() {
+            document.getElementById('generateBtn').disabled = selectedUsages.length === 0;
+        }
+
+        export function resetSelections() {
+            selectedUsages = [];
+            document.querySelectorAll('.usage-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.getElementById('recommendations').style.display = 'none';
+            updateGenerateButton();
+        }
+
+        export function generateRecommendations() {
+            const recommendations = document.getElementById('recommendations');
+            const selectedUsagesDiv = document.getElementById('selectedUsages');
+            const configGrid = document.getElementById('configGrid');
+
+            // Afficher les usages sélectionnés
+            let usageText = '<h3 style="margin-bottom: 15px; color: #1a1a1a;">📋 Vos usages sélectionnés :</h3>';
+            selectedUsages.forEach((usage, index) => {
+                const spec = usageSpecs[usage];
+                const coefficient = getPriorityCoefficient(index);
+                if (spec) {
+                    usageText += `<div style="display: inline-block; margin: 5px 10px 5px 0; padding: 8px 15px; background: #fff; border: 2px solid #CC0000; border-radius: 25px; color: #CC0000; font-weight: 600;">
+                        <span style="background: #CC0000; color: white; border-radius: 50%; width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px; font-size: 0.8rem;">${index + 1}</span>
+                        <img src="${spec.image}" style="width: 16px; height: 16px; margin-right: 5px; vertical-align: middle;" onerror="this.style.display='none';"> ${spec.name}
+                                 </div>`;
+                }
+            });
+            selectedUsagesDiv.innerHTML = usageText;
+
+            // Générer les configurations combinées avec priorités
+            const combinedSpecs = combineSpecsWithPriority();
+            configGrid.innerHTML = generateConfigCards(combinedSpecs);
+            
+            recommendations.style.display = 'block';
+            recommendations.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        
+        
+        // NOUVELLE FONCTION: Vérification du prix pour les niveaux minimum et recommandé
+        export function isWithinPriceBudget(laptop, level, baseLaptopPrice) {
+            // Appliquer la règle de prix pour les niveaux "minimum" et "recommande"
+            if ((level === 'minimum' || level === 'recommande') && baseLaptopPrice) {
+                const maxPrice = baseLaptopPrice * 1.3; // +30% max
+                if (laptop.specs.price > maxPrice) {
+                    console.log(`💰 Prix exclu: ${laptop.name} (${laptop.specs.price}€) > ${maxPrice.toFixed(0)}€ (base: ${baseLaptopPrice}€)`);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        
+        export function generateMSIRecommendations(laptops, level) {
+            if (!laptops || laptops.length === 0) return '';
+            
+            const containerId = `recommendations-${level}`;
+            
+            // Génération du HTML avec navigation (sans compteur)
+            return `
+                <div class="msi-recommendation" id="${containerId}">
+                    ${laptops.length > 1 ? `
+                        <button class="laptop-navigation laptop-nav-prev" onclick="navigateLaptop('${containerId}', -1)">‹</button>
+                        <button class="laptop-navigation laptop-nav-next" onclick="navigateLaptop('${containerId}', 1)">›</button>
+                    ` : ''}
+                    
+                    <div class="laptop-content">
+                        ${laptops.map((laptop, index) => `
+                            <div class="laptop-slide" data-laptop-index="${index}" ${index === 0 ? '' : 'style="display: none;"'}>
+                                <div class="msi-rec-header">
+                                    <div class="msi-rec-title">${laptop.name}</div>
+                                    <div class="msi-rec-price">${laptop.specs.price}€</div>
+                                </div>
+                                
+                                ${laptop.image ? `<img src="${laptop.image}" alt="${laptop.name}" class="msi-product-image" onerror="this.style.display='none'">` : ''}
+                                
+                                <div class="msi-spec-grid">
+                                    <div class="msi-spec-item">
+    <div class="msi-spec-label">Processeur</div>
+    <div class="msi-spec-value">${laptop.specs.cpu || 'N/A'}</div>
+</div>
+<div class="msi-spec-item">
+    <div class="msi-spec-label">Carte graphique</div>
+    <div class="msi-spec-value">${laptop.specs.gpu || 'N/A'}</div>
+</div>
+<div class="msi-spec-item">
+    <div class="msi-spec-label">Mémoire RAM</div>
+    <div class="msi-spec-value">${laptop.specs.ram || 'N/A'}</div>
+</div>                                    <div class="msi-spec-item">
+                                        <div class="msi-spec-label">Stockage</div>
+                                        <div class="msi-spec-value">${laptop.specs.ssd || 'N/A'}</div>
+                                    </div>
+                                    <div class="msi-spec-item">
+                                        <div class="msi-spec-label">Écran</div>
+                                        <div class="msi-spec-value">${laptop.specs.screen_quality || 'N/A'}${laptop.specs.screen_refresh ? ' - ' + laptop.specs.screen_refresh : ''}</div>
+                                    </div>
+                                    <div class="msi-spec-item">
+                                        <div class="msi-spec-label">Poids</div>
+                                        <div class="msi-spec-value">${laptop.specs.mobility || 'N/A'}</div>
+                                    </div>
+                                </div>
+                                
+                                <a href="${laptop.specs.link}" target="_blank" class="msi-buy-btn">
+                                    Voir chez ${getResellerName(laptop.reseller)}
+                                </a>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+
+        // Fonction de navigation entre les laptops
+        export function navigateLaptop(containerId, direction) {
+            const container = document.getElementById(containerId);
+            const slides = container.querySelectorAll('.laptop-slide');
+            const currentSlide = container.querySelector('.laptop-slide:not([style*="display: none"])');
+            const currentIndex = parseInt(currentSlide.dataset.laptopIndex);
+            
+            let newIndex = currentIndex + direction;
+            
+            // Gérer le bouclage
+            if (newIndex >= slides.length) newIndex = 0;
+            if (newIndex < 0) newIndex = slides.length - 1;
+            
+            // Cacher l'ancien slide
+            currentSlide.style.display = 'none';
+            
+            // Afficher le nouveau slide
+            slides[newIndex].style.display = 'block';
+            
+            // Animation d'entrée
+            slides[newIndex].style.opacity = '0';
+            slides[newIndex].style.transform = 'translateX(' + (direction > 0 ? '20px' : '-20px') + ')';
+            
+            setTimeout(() => {
+                slides[newIndex].style.transition = 'all 0.3s ease';
+                slides[newIndex].style.opacity = '1';
+                slides[newIndex].style.transform = 'translateX(0)';
+            }, 10);
+        }
+
 
