@@ -559,8 +559,6 @@ export function findMatchingLaptops(specs, level, maxResults = 3, excludeLaptops
             recommendations.scrollIntoView({ behavior: 'smooth' });
         }
 
-        
-        
         // NOUVELLE FONCTION: Vérification du prix pour les niveaux minimum et recommandé
         export function isWithinPriceBudget(laptop, level, baseLaptopPrice) {
             // Appliquer la règle de prix pour les niveaux "minimum" et "recommande"
@@ -573,67 +571,6 @@ export function findMatchingLaptops(specs, level, maxResults = 3, excludeLaptops
             }
             return true;
         }
-
-        
-        export function generateMSIRecommendations(laptops, level) {
-            if (!laptops || laptops.length === 0) return '';
-            
-            const containerId = `recommendations-${level}`;
-            
-            // Génération du HTML avec navigation (sans compteur)
-            return `
-                <div class="msi-recommendation" id="${containerId}">
-                    ${laptops.length > 1 ? `
-                        <button class="laptop-navigation laptop-nav-prev" onclick="navigateLaptop('${containerId}', -1)">‹</button>
-                        <button class="laptop-navigation laptop-nav-next" onclick="navigateLaptop('${containerId}', 1)">›</button>
-                    ` : ''}
-                    
-                    <div class="laptop-content">
-                        ${laptops.map((laptop, index) => `
-                            <div class="laptop-slide" data-laptop-index="${index}" ${index === 0 ? '' : 'style="display: none;"'}>
-                                <div class="msi-rec-header">
-                                    <div class="msi-rec-title">${laptop.name}</div>
-                                    <div class="msi-rec-price">${laptop.specs.price}€</div>
-                                </div>
-                                
-                                ${laptop.image ? `<img src="${laptop.image}" alt="${laptop.name}" class="msi-product-image" onerror="this.style.display='none'">` : ''}
-                                
-                                <div class="msi-spec-grid">
-                                    <div class="msi-spec-item">
-    <div class="msi-spec-label">Processeur</div>
-    <div class="msi-spec-value">${laptop.specs.cpu || 'N/A'}</div>
-</div>
-<div class="msi-spec-item">
-    <div class="msi-spec-label">Carte graphique</div>
-    <div class="msi-spec-value">${laptop.specs.gpu || 'N/A'}</div>
-</div>
-<div class="msi-spec-item">
-    <div class="msi-spec-label">Mémoire RAM</div>
-    <div class="msi-spec-value">${laptop.specs.ram || 'N/A'}</div>
-</div>                                    <div class="msi-spec-item">
-                                        <div class="msi-spec-label">Stockage</div>
-                                        <div class="msi-spec-value">${laptop.specs.ssd || 'N/A'}</div>
-                                    </div>
-                                    <div class="msi-spec-item">
-                                        <div class="msi-spec-label">Écran</div>
-                                        <div class="msi-spec-value">${laptop.specs.screen_quality || 'N/A'}${laptop.specs.screen_refresh ? ' - ' + laptop.specs.screen_refresh : ''}</div>
-                                    </div>
-                                    <div class="msi-spec-item">
-                                        <div class="msi-spec-label">Poids</div>
-                                        <div class="msi-spec-value">${laptop.specs.mobility || 'N/A'}</div>
-                                    </div>
-                                </div>
-                                
-                                <a href="${laptop.specs.link}" target="_blank" class="msi-buy-btn">
-                                    Voir chez ${getResellerName(laptop.reseller)}
-                                </a>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-        }
-
 
         // Fonction de navigation entre les laptops
         export function navigateLaptop(containerId, direction) {
@@ -664,5 +601,4 @@ export function findMatchingLaptops(specs, level, maxResults = 3, excludeLaptops
                 slides[newIndex].style.transform = 'translateX(0)';
             }, 10);
         }
-
 
